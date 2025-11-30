@@ -4,6 +4,7 @@ import functions.threads.*;
 
 public class Main {
 
+    // Задание 2: последовательная версия (без потоков)
     public static void nonThread() {
         Task task = new Task(100);
         for (int i = 0; i < task.getTaskCount(); i++) {
@@ -23,31 +24,31 @@ public class Main {
         }
     }
 
+    // Задание 3: простая многопоточная версия (с wait/notify)
     public static void simpleThreads() {
         Task task = new Task(100);
-        Thread gen = new Thread(new SimpleGenerator(task));
-        Thread integ = new Thread(new SimpleIntegrator(task));
+        Thread generator = new Thread(new SimpleGenerator(task));
+        Thread integrator = new Thread(new SimpleIntegrator(task));
 
-        gen.setPriority(Thread.MIN_PRIORITY);
-        integ.setPriority(Thread.MIN_PRIORITY);
-
-        gen.start();
-        integ.start();
+        generator.start();
+        integrator.start();
 
         try {
-            gen.join();
-            integ.join();
+            generator.join();
+            integrator.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
+    // Задание 4: сложная многопоточная версия (с собственным семафором)
     public static void complicatedThreads() throws InterruptedException {
         Task task = new Task(100);
 
-        SimpleSemaphore empty = new SimpleSemaphore(); // изначально свободен — можно писать
-        SimpleSemaphore full = new SimpleSemaphore();  // изначально свободен, но сразу займём
+        SimpleSemaphore empty = new SimpleSemaphore(); // можно писать
+        SimpleSemaphore full = new SimpleSemaphore();  // можно читать
 
+        // Делаем full занятым, чтобы интегратор ждал
         full.acquire();
 
         Generator generator = new Generator(task, empty, full);
@@ -56,11 +57,10 @@ public class Main {
         generator.start();
         integrator.start();
 
-        //Thread.sleep(50);
-        //generator.interrupt();
-        //integrator.interrupt();
-        generator.join();
-        integrator.join();
+        // Требование задания: ждать 50 мс, затем прервать
+        Thread.sleep(50);
+        generator.interrupt();
+        integrator.interrupt();
 
         generator.join(100);
         integrator.join(100);
@@ -73,5 +73,9 @@ public class Main {
             System.err.println("Main thread was interrupted");
             Thread.currentThread().interrupt();
         }
+
+        // nonThread();          // ← последовательный режим
+
+       //  simpleThreads();      // ← многопоточный с wait/notify
     }
 }
