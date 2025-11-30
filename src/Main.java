@@ -56,9 +56,11 @@ public class Main {
         generator.start();
         integrator.start();
 
-        Thread.sleep(50);
-        generator.interrupt();
-        integrator.interrupt();
+        //Thread.sleep(50);
+        //generator.interrupt();
+        //integrator.interrupt();
+        generator.join();
+        integrator.join();
 
         generator.join(100);
         integrator.join(100);
